@@ -1,56 +1,33 @@
-
-import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
-import Navbar from './components/Navbar';
-import Home from './components/Home';
-import Fleet from './components/Fleet';
-import Services from './components/Services';
-import Contact from './components/Contact';
-import BookingModal from './components/BookingModal';
+import LandingPage from './pages/LandingPage';
+import AdminLogin from './components/admin/AdminLogin';
+import AdminLayout from './components/admin/AdminLayout';
+import Dashboard from './components/admin/Dashboard';
+import AddCar from './components/admin/AddCar';
+import ManageCars from './components/admin/ManageCars';
+import Bookings from './components/admin/Bookings';
 
 function App() {
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [selectedCar, setSelectedCar] = useState(null);
-
-  const openBooking = (car = null) => {
-    setSelectedCar(car);
-    setIsBookingOpen(true);
-  };
-
-  const closeBooking = () => {
-    setIsBookingOpen(false);
-    setSelectedCar(null);
-  };
-
   return (
-    <div className="font-sans antialiased text-gray-900">
-      <Navbar onBookClick={() => openBooking(null)} />
+    <Router>
+      <Routes>
+        {/* Public Landing Page */}
+        <Route path="/" element={<LandingPage />} />
 
-      <main>
-        <section id="home">
-          <Home onBookNow={() => openBooking(null)} />
-        </section>
-        <section id="fleet">
-          <Fleet onBookNow={openBooking} />
-        </section>
-        <section id="services">
-          <Services />
-        </section>
-        <section id="contact">
-          <Contact />
-        </section>
-      </main>
+        {/* Admin Login */}
+        <Route path="/admin/login" element={<AdminLogin />} />
 
-      <footer className="bg-gray-900 text-gray-400 py-8 text-center border-t border-gray-800">
-        <p>&copy; 2024 DriveX. All rights reserved.</p>
-      </footer>
-
-      <BookingModal
-        isOpen={isBookingOpen}
-        onClose={closeBooking}
-        selectedCar={selectedCar}
-      />
-    </div>
+        {/* Admin Dashboard Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="add-car" element={<AddCar />} />
+          <Route path="manage-cars" element={<ManageCars />} />
+          <Route path="bookings" element={<Bookings />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
