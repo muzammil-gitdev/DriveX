@@ -7,9 +7,12 @@ import Dashboard from './components/admin/Dashboard';
 import AddCar from './components/admin/AddCar';
 import ManageCars from './components/admin/ManageCars';
 import Bookings from './components/admin/Bookings';
+import { Toaster } from "react-hot-toast";
 
 function App() {
-  return (
+  return (<>
+
+    <Toaster position="top-right" />
     <Router>
       <Routes>
         {/* Public Landing Page */}
@@ -28,6 +31,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+  </>
   );
 }
 
