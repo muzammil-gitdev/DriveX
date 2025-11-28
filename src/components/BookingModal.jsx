@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const BookingModal = ({ isOpen, onClose, selectedCar }) => {
-
     if (!isOpen) return null;
 
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        pickupDate: '',
-        dropoffDate: '',
-        car: selectedCar ? selectedCar.name : '',
+        name: "",
+        email: "",
+        phone: "",
+        pickupDate: "",
+        dropoffDate: "",
+        car: selectedCar ? selectedCar.carname : "",
     });
 
+    // Update car field whenever selectedCar changes
     useEffect(() => {
         if (selectedCar) {
-            setFormData((prev) => ({ ...prev, car: selectedCar.name }));
+            setFormData((prev) => ({ ...prev, car: selectedCar.carname }));
         }
     }, [selectedCar]);
 
@@ -26,7 +26,9 @@ const BookingModal = ({ isOpen, onClose, selectedCar }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert(`Booking Request Sent!\n\nName: ${formData.name}\nCar: ${formData.car}\nDates: ${formData.pickupDate} to ${formData.dropoffDate}`);
+        alert(
+            `Booking Request Sent!\n\nName: ${formData.name}\nCar: ${formData.car}\nDates: ${formData.pickupDate} to ${formData.dropoffDate}`
+        );
         onClose();
     };
 
@@ -36,14 +38,25 @@ const BookingModal = ({ isOpen, onClose, selectedCar }) => {
                 <div className="bg-blue-600 p-6 text-white flex justify-between items-center">
                     <h3 className="text-2xl font-bold">Book Your Ride</h3>
                     <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
 
                 <div className="p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Selected Car */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Selected Car</label>
                             <input
@@ -57,6 +70,7 @@ const BookingModal = ({ isOpen, onClose, selectedCar }) => {
                             />
                         </div>
 
+                        {/* User Info */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                             <input
@@ -97,6 +111,7 @@ const BookingModal = ({ isOpen, onClose, selectedCar }) => {
                             </div>
                         </div>
 
+                        {/* Dates */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Pick-up Date</label>
@@ -122,6 +137,7 @@ const BookingModal = ({ isOpen, onClose, selectedCar }) => {
                             </div>
                         </div>
 
+                        {/* Submit */}
                         <button
                             type="submit"
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mt-4 transition-all duration-300 shadow-lg hover:shadow-blue-500/30"
