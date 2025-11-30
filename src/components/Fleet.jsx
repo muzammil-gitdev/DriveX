@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 
-const Fleet = ({ onBookNow }) => {
+const Fleet = ({ onBookNow, refresh }) => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchCars = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/cars/all`);
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/cars/available`);
             const data = await res.json();
             if (data.success) {
                 setCars(data.data);
@@ -21,9 +21,10 @@ const Fleet = ({ onBookNow }) => {
         }
     };
 
+    // Re-fetch cars when component mounts or `refresh` changes
     useEffect(() => {
         fetchCars();
-    }, []);
+    }, [refresh]); // <-- dependency
 
     return (
         <section id="fleet" className="py-20 bg-gray-50">
