@@ -1,111 +1,170 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 const BookingModal = ({ isOpen, onClose, selectedCar }) => {
     if (!isOpen) return null;
 
+    const today = new Date().toISOString().split("T")[0];
+
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        phone: "",
+        contact: "",
         pickupDate: "",
         dropoffDate: "",
-        car: selectedCar ? selectedCar.carname : "",
+        carId: selectedCar?._id || "",
+        pricePerDay: selectedCar?.pricePerDay || 0,
     });
 
-    // Update car field whenever selectedCar changes
+    const [totalPrice, setTotalPrice] = useState(0);
+    const [loading, setLoading] = useState(false);
+
+    // Update selected car when modal reopens
     useEffect(() => {
         if (selectedCar) {
-            setFormData((prev) => ({ ...prev, car: selectedCar.carname }));
+            setFormData((prev) => ({
+                ...prev,
+                carId: selectedCar._id,
+                pricePerDay: selectedCar.pricePerDay,
+            }));
         }
     }, [selectedCar]);
+
+    // Price calculation
+    useEffect(() => {
+        if (!formData.pickupDate || !formData.dropoffDate) {
+            setTotalPrice(0);
+            return;
+        }
+        const start = new Date(formData.pickupDate);
+        const end = new Date(formData.dropoffDate);
+        if (end <= start) {
+            setTotalPrice(0);
+            return;
+        }
+        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        setTotalPrice(days * formData.pricePerDay);
+    }, [formData.pickupDate, formData.dropoffDate, formData.pricePerDay]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    // Client-side validation
+    const validate = () => {
+        if (!formData.name.trim()) return "Enter full name";
+        if (!formData.email.trim()) return "Enter email";
+        if (!formData.contact.trim()) return "Enter contact number";
+        if (!formData.pickupDate) return "Select pickup date";
+        if (!formData.dropoffDate) return "Select dropoff date";
+
+        const start = new Date(formData.pickupDate);
+        const end = new Date(formData.dropoffDate);
+
+        if (start < new Date(today)) return "Pickup date cannot be in the past";
+        if (end <= start) return "Dropoff date must be after pickup date";
+
+        return null;
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert(
-            `Booking Request Sent!\n\nName: ${formData.name}\nCar: ${formData.car}\nDates: ${formData.pickupDate} to ${formData.dropoffDate}`
-        );
-        onClose();
+        const error = validate();
+        if (error) {
+            toast.error(error);
+            return;
+        }
+
+        setLoading(true);
+        const payload = {
+            carId: formData.carId,
+            name: formData.name,
+            email: formData.email,
+            contact: formData.contact,
+            pickupDate: formData.pickupDate,
+            dropoffDate: formData.dropoffDate,
+        };
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/booking/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+            setLoading(false);
+
+            if (!data.success) {
+                toast.error(data.message || "Booking failed");
+                return;
+            }
+
+            toast.success(`Booking Confirmed! Booking ID: ${data.bookingId}`);
+            onClose();
+        } catch (err) {
+            setLoading(false);
+            console.error(err);
+            toast.error("Something went wrong while booking");
+        }
     };
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all">
+            <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
                 <div className="bg-blue-600 p-6 text-white flex justify-between items-center">
                     <h3 className="text-2xl font-bold">Book Your Ride</h3>
-                    <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
-                        <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+                    <button onClick={onClose} className="hover:text-gray-100">✖</button>
                 </div>
 
                 <div className="p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Selected Car */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Selected Car</label>
+                            <label className="text-sm font-medium text-gray-700">Selected Car</label>
                             <input
                                 type="text"
-                                name="car"
-                                value={formData.car}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50"
-                                placeholder="Choose a car or type here"
-                                required
+                                value={selectedCar?.carname}
+                                readOnly
+                                className="w-full px-4 py-2 border rounded-lg bg-gray-100"
                             />
                         </div>
 
-                        {/* User Info */}
+                        {/* Name */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <label className="text-sm font-medium text-gray-700">Full Name</label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                placeholder="John Doe"
+                                className="w-full px-4 py-2 border rounded-lg"
                                 required
                             />
                         </div>
 
+                        {/* Email + Contact */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <label className="text-sm font-medium text-gray-700">Email</label>
                                 <input
                                     type="email"
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    placeholder="john@example.com"
+                                    className="w-full px-4 py-2 border rounded-lg"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <label className="text-sm font-medium text-gray-700">Contact</label>
                                 <input
                                     type="tel"
-                                    name="phone"
-                                    value={formData.phone}
+                                    name="contact"
+                                    value={formData.contact}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    placeholder="(555) 123-4567"
+                                    className="w-full px-4 py-2 border rounded-lg"
                                     required
                                 />
                             </div>
@@ -114,35 +173,43 @@ const BookingModal = ({ isOpen, onClose, selectedCar }) => {
                         {/* Dates */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Pick-up Date</label>
+                                <label className="text-sm font-medium text-gray-700">Pickup Date</label>
                                 <input
                                     type="date"
                                     name="pickupDate"
+                                    min={today}
                                     value={formData.pickupDate}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 border rounded-lg"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Drop-off Date</label>
+                                <label className="text-sm font-medium text-gray-700">Dropoff Date</label>
                                 <input
                                     type="date"
                                     name="dropoffDate"
+                                    min={formData.pickupDate || today}
                                     value={formData.dropoffDate}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    className="w-full px-4 py-2 border rounded-lg"
                                     required
                                 />
                             </div>
                         </div>
 
+                        {/* Total Price */}
+                        <p className="text-lg font-semibold text-blue-700 mt-2">
+                            {totalPrice > 0 ? `Estimated Price: PKR ${totalPrice}` : "Select valid dates to see price"}
+                        </p>
+
                         {/* Submit */}
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mt-4 transition-all duration-300 shadow-lg hover:shadow-blue-500/30"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold flex items-center justify-center"
+                            disabled={loading}
                         >
-                            Confirm Booking
+                            {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "Confirm Booking"}
                         </button>
                     </form>
                 </div>
