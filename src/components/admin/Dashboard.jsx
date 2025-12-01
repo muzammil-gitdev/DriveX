@@ -19,7 +19,7 @@ const Dashboard = () => {
                 setStats([
                     { title: 'Total Cars', value: data.data.totalCars, color: 'bg-blue-500' },
                     { title: 'Active Bookings', value: data.data.activeBookings, color: 'bg-green-500' },
-                    { title: 'Total Revenue', value: `$ ${data.data.totalRevenue}`, color: 'bg-purple-500' },
+                    { title: 'Total Revenue', value: `${data.data.totalRevenue} pkr`, color: 'bg-purple-500' },
                     { title: 'Pending Requests', value: data.data.pendingRequests, color: 'bg-yellow-500' },
                 ]);
             } else {

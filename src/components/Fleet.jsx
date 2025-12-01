@@ -60,7 +60,7 @@ const Fleet = ({ onBookNow, refresh }) => {
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-4">
                                         <h3 className="text-xl font-bold text-gray-900">{car.carname}</h3>
-                                        <span className="text-blue-600 font-bold">${car.pricePerDay}/day</span>
+                                        <span className="text-blue-600 font-bold">{car.pricePerDay} pkr/day</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2 mb-6">
                                         {car.features.map((feature, index) => (

@@ -100,7 +100,7 @@ const ManageCars = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">{car.brand}</td>
-                                        <td className="px-6 py-4 text-gray-600">${car.pricePerDay}</td>
+                                        <td className="px-6 py-4 text-gray-600">{car.pricePerDay} pkr</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${car.status === "available"
                                                 ? "bg-green-100 text-green-700"
