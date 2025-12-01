@@ -9,6 +9,7 @@ import BookingModal from '../components/BookingModal';
 const LandingPage = () => {
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [selectedCar, setSelectedCar] = useState(null);
+    const date = new Date().getFullYear();
 
     const openBooking = (car = null) => {
         setSelectedCar(car);
@@ -40,7 +41,7 @@ const LandingPage = () => {
             </main>
 
             <footer className="bg-gray-900 text-gray-400 py-8 text-center border-t border-gray-800">
-                <p>&copy; 2024 DriveX. All rights reserved.</p>
+                <p>&copy; {date} DriveX. All rights reserved.</p>
             </footer>
 
             <BookingModal
