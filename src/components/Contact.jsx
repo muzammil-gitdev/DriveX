@@ -1,6 +1,36 @@
-import React from 'react';
+import React, { useState } from "react";
 
 const Contact = () => {
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        message: "",
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!form.name || !form.email || !form.message) return;
+
+        setLoading(true);
+        setSuccess(false);
+
+        setTimeout(() => {
+            setLoading(false);
+            setSuccess(true);
+
+            setTimeout(() => setSuccess(false), 3000);
+            setForm({ name: "", email: "", message: "" });
+        }, 800);
+    };
+
     return (
         <section id="contact" className="py-20 bg-gray-900 text-white">
             <div className="max-w-screen-xl mx-auto px-4">
@@ -52,22 +82,61 @@ const Contact = () => {
                     </div>
 
                     <div className="bg-gray-800 p-8 rounded-2xl">
-                        <form className="space-y-6">
+                        <form className="space-y-6" onSubmit={handleSubmit}>
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
-                                <input type="text" className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="John Doe" />
+                                <input
+                                    name="name"
+                                    type="text"
+                                    value={form.name}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    placeholder="John Doe"
+                                    required
+                                />
                             </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
-                                <input type="email" className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="john@example.com" />
+                                <input
+                                    name="email"
+                                    type="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    placeholder="john@example.com"
+                                    required
+                                />
                             </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
-                                <textarea rows="4" className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors" placeholder="I'm interested in renting..."></textarea>
+                                <textarea
+                                    name="message"
+                                    rows="4"
+                                    value={form.message}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    placeholder="I'm interested in renting..."
+                                    required
+                                ></textarea>
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-colors duration-300">
-                                Send Message
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full font-bold py-4 rounded-lg transition-colors duration-300 
+                                    ${loading ? "bg-gray-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
+                                `}
+                            >
+                                {loading ? "Sending message..." : "Send Message"}
                             </button>
+
+                            {success && (
+                                <p className="text-green-500 text-center font-semibold mt-4">
+                                    Message sent successfully!
+                                </p>
+                            )}
                         </form>
                     </div>
                 </div>

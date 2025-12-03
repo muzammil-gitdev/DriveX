@@ -1,16 +1,49 @@
-# React + Vite
+🚗 DriveX — Car Rental Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+DriveX Frontend is a modern, responsive car rental web application built with React + Vite.
+It provides an elegant interface for browsing cars, booking vehicles, and managing admin dashboard details.
+🚀 Features
+🔹 User Side
 
-Currently, two official plugins are available:
+View Available Cars (filtered by backend)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+View Car Details (image, features, pricePerDay)
 
-## React Compiler
+Booking Form with:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Client-side validation
 
-## Expanding the ESLint configuration
+Past-date restriction
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Auto-calculating total price
+
+Live price estimation before confirm
+
+Loader animation
+
+🔹 Admin Dashboard
+
+View total cars
+
+View active bookings
+
+View total revenue
+
+View pending booking requests
+
+Recent bookings section
+
+🧩 Tech Stack
+
+React.js
+
+Vite
+
+TailwindCSS
+
+React Router
+
+Fetch API
+
+Environment Variables (.env)
+

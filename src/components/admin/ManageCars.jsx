@@ -5,9 +5,12 @@ import { toast } from "react-hot-toast";
 const ManageCars = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [deleteId, setDeleteId] = useState(null); // car being deleted
+    const [deleteId, setDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
+
+    // 👉 Add this function
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
     const fetchCars = async () => {
         setLoading(true);
@@ -99,19 +102,25 @@ const ManageCars = () => {
                                                 <span className="font-medium text-gray-900">{car.carname}</span>
                                             </div>
                                         </td>
+
                                         <td className="px-6 py-4 text-gray-600">{car.brand}</td>
+
                                         <td className="px-6 py-4 text-gray-600">{car.pricePerDay} pkr</td>
+
                                         <td className="px-6 py-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${car.status === "available"
-                                                ? "bg-green-100 text-green-700"
-                                                : car.status === "rented"
-                                                    ? "bg-blue-100 text-blue-700"
-                                                    : "bg-yellow-100 text-yellow-700"
-                                                }`}>
-                                                {car.status}
+                                            <span
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${car.status === "available"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : car.status === "rented"
+                                                        ? "bg-blue-100 text-blue-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                            >
+                                                {capitalize(car.status)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 flex space-x-3">
+
+                                        <td className="px-6 py-6 flex space-x-3">
                                             <button
                                                 onClick={() => navigate("/admin/add-car", { state: { carData: car } })}
                                                 className="text-blue-600 hover:text-blue-800 font-medium"
@@ -139,6 +148,7 @@ const ManageCars = () => {
                     <div className="bg-white rounded-xl p-6 w-96 shadow-lg">
                         <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
                         <p className="mb-6">Are you sure you want to delete this car?</p>
+
                         <div className="flex justify-end space-x-3">
                             <button
                                 onClick={() => setDeleteId(null)}
@@ -146,6 +156,7 @@ const ManageCars = () => {
                             >
                                 Cancel
                             </button>
+
                             <button
                                 onClick={handleDelete}
                                 disabled={deleting}

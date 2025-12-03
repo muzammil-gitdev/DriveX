@@ -2,84 +2,115 @@ import React, { useEffect, useState } from "react";
 
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // initial fetch loading
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [newStatus, setNewStatus] = useState("");
+    const [isUpdating, setIsUpdating] = useState(false); // controls modal "Updating..." state
 
     const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-    // Format dates like: Oct 12 - Oct 15
     const formatDateRange = (pickup, dropoff) => {
         const options = { month: "short", day: "numeric" };
-
         const p = new Date(pickup).toLocaleDateString("en-US", options);
         const d = new Date(dropoff).toLocaleDateString("en-US", options);
-
         return `${p} - ${d}`;
     };
 
-    // Auto complete bookings where dropoffDate == current date
     const autoCompleteStatus = async (booking) => {
         const today = new Date().toISOString().split("T")[0];
         const dropDate = booking.dropoffDate.split("T")[0];
 
         if (today === dropDate && booking.status !== "Completed") {
-            await fetch(`${BASE_URL}/api/booking/edit/${booking._id}/status`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "Completed" }),
-            });
+            try {
+                await fetch(`${BASE_URL}/api/booking/edit/${booking._id}/status`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "Completed" }),
+                });
+            } catch (err) {
+                console.error("autoCompleteStatus error:", err);
+            }
         }
     };
 
-    // Fetch all bookings
     const fetchBookings = async () => {
+        setLoading(true);
         try {
             const res = await fetch(`${BASE_URL}/api/booking/all`);
             const data = await res.json();
 
             if (data.success) {
                 setBookings(data.data);
-
-                // Auto update completed bookings
+                // run auto-complete in background for every booking (non-blocking)
                 data.data.forEach((b) => autoCompleteStatus(b));
             }
         } catch (error) {
             console.log("Error fetching bookings", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     useEffect(() => {
         fetchBookings();
     }, []);
 
-    // Delete booking
     const handleDelete = async (id) => {
         if (!confirm("Are you sure you want to delete this booking?")) return;
 
-        await fetch(`${BASE_URL}/api/booking/delete/${id}`, {
-            method: "DELETE",
-        });
-
-        setBookings(bookings.filter((b) => b._id !== id));
+        try {
+            await fetch(`${BASE_URL}/api/booking/delete/${id}`, { method: "DELETE" });
+            setBookings((prev) => prev.filter((b) => b._id !== id));
+        } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Failed to delete booking. Try again.");
+        }
     };
 
-    // Update booking status
     const handleUpdateStatus = async () => {
         if (!selectedBooking) return;
 
-        await fetch(`${BASE_URL}/api/booking/edit/${selectedBooking._id}/status`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: newStatus }),
-        });
+        setIsUpdating(true);
+        try {
+            const res = await fetch(`${BASE_URL}/api/booking/edit/${selectedBooking._id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+            });
 
-        setSelectedBooking(null);
-        setNewStatus("");
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || "Failed to update status");
+            }
 
-        fetchBookings();
+            // update local bookings state optimistically (so list updates instantly)
+            setBookings((prev) =>
+                prev.map((b) =>
+                    b._id === selectedBooking._id ? { ...b, status: newStatus } : b
+                )
+            );
+
+            // close modal
+            setSelectedBooking(null);
+            setNewStatus("");
+        } catch (err) {
+            console.error("Update status error:", err);
+            alert("Failed to update status. Please try again.");
+        } finally {
+            setIsUpdating(false);
+            // refresh from server to ensure data consistency
+            fetchBookings();
+        }
     };
+
+    // Disable scroll when modal is open
+    useEffect(() => {
+        if (selectedBooking) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+    }, [selectedBooking]);
 
     if (loading) return <p>Loading...</p>;
 
@@ -111,7 +142,7 @@ const Bookings = () => {
                                     <td className="px-6 py-4 text-gray-600">
                                         {formatDateRange(booking.pickupDate, booking.dropoffDate)}
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-gray-900">${booking.totalPrice}</td>
+                                    <td className="px-6 py-4 font-medium text-gray-900">{booking.totalPrice} pkr</td>
 
                                     <td className="px-6 py-4">
                                         <span
@@ -152,16 +183,17 @@ const Bookings = () => {
                 </div>
             </div>
 
-            {/* MODAL */}
+            {/* MODAL WITH BLUR EFFECT */}
             {selectedBooking && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-96 space-y-4">
+                <div className="fixed inset-0 backdrop-blur-sm bg-black/10 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-xl shadow-lg w-96 space-y-4 relative">
                         <h3 className="text-xl font-bold">Update Status</h3>
 
                         <select
                             value={newStatus}
                             onChange={(e) => setNewStatus(e.target.value)}
                             className="w-full border rounded-lg px-3 py-2"
+                            disabled={isUpdating}
                         >
                             <option value="Pending">Pending</option>
                             <option value="Confirmed">Confirmed</option>
@@ -172,14 +204,17 @@ const Bookings = () => {
                             <button
                                 className="px-4 py-2 bg-gray-200 rounded-lg"
                                 onClick={() => setSelectedBooking(null)}
+                                disabled={isUpdating}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center"
                                 onClick={handleUpdateStatus}
+                                disabled={isUpdating}
+                                aria-busy={isUpdating}
                             >
-                                Update
+                                {isUpdating ? "Updating..." : "Update"}
                             </button>
                         </div>
                     </div>
