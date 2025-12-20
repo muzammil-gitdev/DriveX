@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import CarSkeleton from "./CarSkeleton"; // Make sure the path is correct
 
 const Fleet = ({ onBookNow, refresh }) => {
     const [cars, setCars] = useState([]);
@@ -21,10 +22,9 @@ const Fleet = ({ onBookNow, refresh }) => {
         }
     };
 
-    // Re-fetch cars when component mounts or `refresh` changes
     useEffect(() => {
         fetchCars();
-    }, [refresh]); // <-- dependency
+    }, [refresh]);
 
     return (
         <section id="fleet" className="py-20 bg-gray-50">
@@ -36,13 +36,16 @@ const Fleet = ({ onBookNow, refresh }) => {
                     </p>
                 </div>
 
-                {loading ? (
-                    <p className="text-center text-gray-500">Loading cars...</p>
-                ) : cars.length === 0 ? (
-                    <p className="text-center text-gray-500">No cars available.</p>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {cars.map((car) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {loading ? (
+                        // Render 6 Skeletons to fill the grid during initial fetch
+                        [...Array(6)].map((_, index) => <CarSkeleton key={index} />)
+                    ) : cars.length === 0 ? (
+                        <div className="col-span-full text-center py-20">
+                            <p className="text-gray-500 text-lg">No cars available at the moment.</p>
+                        </div>
+                    ) : (
+                        cars.map((car) => (
                             <div
                                 key={car._id}
                                 className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group"
@@ -80,9 +83,9 @@ const Fleet = ({ onBookNow, refresh }) => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
+                        ))
+                    )}
+                </div>
             </div>
         </section>
     );
