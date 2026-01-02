@@ -51,7 +51,7 @@ const Dashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 font-medium">{stat.title}</p>
-                                <h3 className="text-2xl font-bold text-gray-800 mt-1">
+                                <h3 className="text-[18px] font-bold text-gray-800 mt-1">
                                     {loading ? "..." : stat.value}
                                 </h3>
                             </div>

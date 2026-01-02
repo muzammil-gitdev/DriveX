@@ -41,7 +41,6 @@ const Bookings = () => {
 
             if (data.success) {
                 setBookings(data.data);
-                // run auto-complete in background for every booking (non-blocking)
                 data.data.forEach((b) => autoCompleteStatus(b));
             }
         } catch (error) {
@@ -137,12 +136,12 @@ const Bookings = () => {
                             {bookings.map((booking) => (
                                 <tr key={booking._id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 font-mono text-sm text-gray-500">{booking.bookingId}</td>
-                                    <td className="px-6 py-4 font-normal text-gray-900">{booking.name}</td>
-                                    <td className="px-6 py-4 text-gray-600">{booking.carName}</td>
-                                    <td className="px-6 py-4 text-gray-600">
+                                    <td className="px-6 py-4 font-normal text-sm text-gray-900">{booking.name}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">{booking.carName}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
                                         {formatDateRange(booking.pickupDate, booking.dropoffDate)}
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-gray-900">{booking.totalPrice} pkr</td>
+                                    <td className="px-6 py-4 font-medium text-sm text-gray-900">{booking.totalPrice} pkr</td>
 
                                     <td className="px-6 py-4">
                                         <span
